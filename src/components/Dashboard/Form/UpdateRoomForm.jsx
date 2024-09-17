@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import { categories } from '../Categories/CategoriesData'
 import { DateRange } from 'react-date-range'
+import { categories } from './../../Categories/CategoriesData';
 const UpdateRoomForm = ({
   handleSubmit,
   handleImage,

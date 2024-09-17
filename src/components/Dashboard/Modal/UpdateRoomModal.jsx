@@ -9,11 +9,11 @@ import {
 } from '@headlessui/react'
 import { Fragment, useState } from 'react'
 import UpdateRoomForm from '../Form/UpdateRoomForm'
-import useAxiosSecure from '../../hooks/useAxiosSecure'
-import { imageUpload } from '../../api/utils'
 import toast from 'react-hot-toast'
+import useAxiosSecure from '../../../hooks/useAxiosSecure'
+import { imageUpload } from './../../../Api/Utils/Index';
 
-const UpdateRoomModal = ({ setIsEditModalOpen, isOpen, room, refetch }) => {
+const UpdateRoomModal = ({ setIsEditModalOpen, isOpen, room ,  refetch}) => {
   const axiosSecure = useAxiosSecure()
   const [loading, setLoading] = useState(false)
   const [roomData, setRoomData] = useState(room)
@@ -60,9 +60,9 @@ const UpdateRoomModal = ({ setIsEditModalOpen, isOpen, room, refetch }) => {
         updatedRoomData
       )
       console.log(data)
-      refetch()
       setIsEditModalOpen(false)
       setLoading(false)
+      refetch()
       toast.success('Home info updated')
     } catch (err) {
       console.log(err)
@@ -118,6 +118,7 @@ const UpdateRoomModal = ({ setIsEditModalOpen, isOpen, room, refetch }) => {
                     loading={loading}
                     handleImage={handleImage}
                     setRoomData={setRoomData}
+                   
                   />
                 </div>
                 <hr className='mt-8 ' />

@@ -9,6 +9,7 @@ import useAxiosSecure from '../../../hooks/useAxiosSecure'
 import toast from 'react-hot-toast'
 import useRole from './../../../hooks/UseRole';
 
+
 const Navbar = () => {
   const axiosSecure= useAxiosSecure()
   const [role]=useRole()
@@ -78,6 +79,7 @@ console.log(user)
                       // disabled={role === 'host' && <button className=' hidden'></button>}
                       className='disabled:cursor-not-allowed  cursor-pointer hover:bg-neutral-100 py-3 px-4 text-sm font-semibold rounded-full  transition'
                     >
+
                       Host your home
                     </button>
                   {/* )} */}

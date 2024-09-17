@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import PropTypes from 'prop-types'
+
 import {
   Dialog,
   Transition,
@@ -7,9 +8,43 @@ import {
   DialogTitle,
   DialogPanel,
 } from '@headlessui/react'
-import { Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import CheckoutForm from './CheckoutFrom'
 
-const HostModal = ({ closeModal, isOpen , modalHandler}) => {
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const HostModal = ({ closeModal, 
+isOpen, modalHandler }) => {
+
+  // host payment method
+  const [clientSecret, setClientSecret] = useState("");
+  useEffect(() => {
+    const price = 5
+    fetch(`http://localhost:8000/create-payment-host`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({ price })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setClientSecret(data.clientSecret)
+       
+      })
+  }, [])
+console.log(clientSecret)
+  const appearance = {
+    theme: 'stripe',
+  };
+  const options = {
+    clientSecret,
+    appearance,
+  };
+
+  // host payment method
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as='div' className='relative z-10' onClose={closeModal}>
@@ -44,20 +79,40 @@ const HostModal = ({ closeModal, isOpen , modalHandler}) => {
                   Become A Host!
                 </DialogTitle>
                 <div className='mt-2'>
-                  <p className='text-sm text-gray-500'>
-                    Please read all the terms & conditions before becoming a
-                    host.
+                  <p className='text-sm bg-orange-700 p-2 text-white'>
+                  Do you want to be a host? Then please pay 5$ and press continue button and wait! Your confirmation will be sent by mail
                   </p>
                 </div>
+
+
+                {/* payment  */}
+
+                {clientSecret && 
+                <Elements options={options} stripe={stripePromise}>
+                  {/* checkout form */}
+                  <CheckoutForm
+                    // bookingInfo={bookingInfo}
+                    // closeModal={closeModal}
+                    // refetch={refetch}
+                  />
+                </Elements>}
+                {/* payment  */}
+
+
+
+
+
+
                 <hr className='mt-8 ' />
                 <div className='flex mt-2 justify-around'>
                   <button
-                  onClick={()=>{
-                    modalHandler()
-                    closeModal()
-                  }}
+                  disabled={!clientSecret}
+                    onClick={() => {
+                      modalHandler()
+                      closeModal()
+                    }}
                     type='button'
-                    className='inline-flex justify-center rounded-md border border-transparent bg-green-100 px-4 py-2 text-sm font-medium text-green-900 hover:bg-green-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
+                    className=' disabled:hidden inline-flex justify-center rounded-md border border-transparent bg-green-100 px-4 py-2 text-sm font-medium text-green-900 hover:bg-green-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
                   >
                     Continue
                   </button>
@@ -79,9 +134,9 @@ const HostModal = ({ closeModal, isOpen , modalHandler}) => {
 }
 
 HostModal.propTypes = {
-    closeModal: PropTypes.func,
-    isOpen: PropTypes.bool,
-    modalHandler: PropTypes.func,
-  }
+  closeModal: PropTypes.func,
+  isOpen: PropTypes.bool,
+  modalHandler: PropTypes.func,
+}
 
 export default HostModal
