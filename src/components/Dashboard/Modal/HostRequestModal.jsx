@@ -1,41 +1,38 @@
-/* eslint-disable react/prop-types */
-import PropTypes from 'prop-types'
-
+import { useEffect, useState, Fragment } from 'react';
 import {
   Dialog,
   Transition,
   TransitionChild,
   DialogTitle,
   DialogPanel,
-} from '@headlessui/react'
-import { Fragment, useEffect, useState } from 'react'
+} from '@headlessui/react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import CheckoutForm from './CheckoutFrom'
+import PropTypes from 'prop-types';
+import CheckoutForm from './CheckoutFrom';
 
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-const HostModal = ({ closeModal, 
-isOpen, modalHandler }) => {
 
-  // host payment method
+const HostModal = ({ closeModal, isOpen, modalHandler }) => {
   const [clientSecret, setClientSecret] = useState("");
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false); // Track payment success
+
   useEffect(() => {
-    const price = 5
+    const price = 5;
     fetch(`http://localhost:8000/create-payment-host`, {
       method: 'POST',
       headers: {
-        'content-type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ price })
+      body: JSON.stringify({ price }),
     })
-      .then(res => res.json())
-      .then(data => {
-        setClientSecret(data.clientSecret)
-       
-      })
-  }, [])
-console.log(clientSecret)
+      .then((res) => res.json())
+      .then((data) => {
+        setClientSecret(data.clientSecret);
+      });
+  }, []);
+
   const appearance = {
     theme: 'stripe',
   };
@@ -44,7 +41,6 @@ console.log(clientSecret)
     appearance,
   };
 
-  // host payment method
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as='div' className='relative z-10' onClose={closeModal}>
@@ -80,39 +76,39 @@ console.log(clientSecret)
                 </DialogTitle>
                 <div className='mt-2'>
                   <p className='text-sm bg-orange-700 p-2 text-white'>
-                  Do you want to be a host? Then please pay 5$ and press continue button and wait! Your confirmation will be sent by mail
+                    Do you want to be a host? Please pay $5 and press the continue button after successful payment.
                   </p>
                 </div>
 
+                {/* Payment form */}
+                {clientSecret && !isPaymentComplete && (
+                  <Elements options={options} stripe={stripePromise}>
+                    <CheckoutForm
+                      setIsPaymentComplete={setIsPaymentComplete} // Pass down payment status setter
+                    />
+                  </Elements>
+                )}
 
-                {/* payment  */}
-
-                {clientSecret && 
-                <Elements options={options} stripe={stripePromise}>
-                  {/* checkout form */}
-                  <CheckoutForm
-                    // bookingInfo={bookingInfo}
-                    // closeModal={closeModal}
-                    // refetch={refetch}
-                  />
-                </Elements>}
-                {/* payment  */}
-
-
-
-
-
+                {isPaymentComplete && (
+                  <div className="text-green-600">
+                    Payment successful! You are now a host.
+                  </div>
+                )}
 
                 <hr className='mt-8 ' />
                 <div className='flex mt-2 justify-around'>
                   <button
-                  disabled={!clientSecret}
+                    disabled={!clientSecret || !isPaymentComplete} // Enable after payment is complete
                     onClick={() => {
-                      modalHandler()
-                      closeModal()
+                      if (isPaymentComplete) {
+                        modalHandler(); // Proceed only if payment is complete
+                        closeModal();
+                      }
                     }}
                     type='button'
-                    className=' disabled:hidden inline-flex justify-center rounded-md border border-transparent bg-green-100 px-4 py-2 text-sm font-medium text-green-900 hover:bg-green-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
+                    className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white ${
+                      isPaymentComplete ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 cursor-not-allowed'
+                    }`}
                   >
                     Continue
                   </button>
@@ -130,13 +126,13 @@ console.log(clientSecret)
         </div>
       </Dialog>
     </Transition>
-  )
-}
+  );
+};
 
 HostModal.propTypes = {
   closeModal: PropTypes.func,
   isOpen: PropTypes.bool,
   modalHandler: PropTypes.func,
-}
+};
 
-export default HostModal
+export default HostModal;
